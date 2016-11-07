@@ -30,7 +30,7 @@ export default function (filename, option) {
   const colStart = rangeStart.charCodeAt(0) + (ignoreFirstCol ? 1 : 0);
   const rowStart = +rangeStart[1] + (ignoreFirstRow ? 1 : 0);
   const colEnd = rangeEnd.charCodeAt(0);
-  const rowEnd = +rangeEnd[1];
+  const rowEnd = +(rangeEnd.substring(1));
 
   let mainLoopStart, mainLoopEnd,
       subLoopStart, subLoopEnd;
@@ -50,15 +50,23 @@ export default function (filename, option) {
   const resArr = [];
   for (let i = mainLoopStart; i <= mainLoopEnd; i++) {
     const obj = {};
+    let empty = false;
     for (let j = subLoopStart; j <= subLoopEnd; j++) {
       const sheetIndex = mode === 'row'
         ? String.fromCharCode(j) + i
         : String.fromCharCode(i) + j;
       const objKeyIndex = j - subLoopStart;
       const objKey = alias[objKeyIndex] || objKeyIndex;
-      obj[objKey] = workSheet[sheetIndex].v;
+      const value = workSheet[sheetIndex] ? workSheet[sheetIndex].v : null;
+      if (j === subLoopStart && !value) {
+        empty = true;
+        break;
+      }
+      obj[objKey] = value;
     }
-    resArr.push(obj);
+    if (!empty) {
+      resArr.push(obj);
+    }
   }
 
   return resArr;
